@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Box Editor</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+      #controls {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Canvas Box Editor</h1>
+    <input type="file" id="imageLoader" accept="image/*" />
+    <input type="file" id="boxLoader" accept=".box" />
+    <button onclick="downloadBox()">Download .box</button>
+    <div>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="controls">
+      <label>Selected Char: <input type="text" id="charInput" maxlength="1" /></label>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const imageLoader = document.getElementById("imageLoader");
+      const boxLoader = document.getElementById("boxLoader");
+      const charInput = document.getElementById("charInput");
+
+      let image = new Image();
+      let boxes = [];
+      let selectedBoxIndex = null;
+      let offsetX, offsetY;
+
+      imageLoader.addEventListener("change", (e) => {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            draw();
+          };
+          image.src = event.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      });
+
+      boxLoader.addEventListener("change", (e) => {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const lines = event.target.result.split("\n");
+          boxes = lines
+            .filter((line) => line.trim())
+            .map((line) => {
+              const [char, x1, y1, x2, y2] = line.split(" ");
+              return {
+                char,
+                x: parseInt(x1),
+                y: image.height - parseInt(y2),
+                w: parseInt(x2) - parseInt(x1),
+                h: parseInt(y2) - parseInt(y1),
+              };
+            });
+          draw();
+        };
+        reader.readAsText(e.target.files[0]);
+      });
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+        boxes.forEach((box, i) => {
+          ctx.strokeStyle = i === selectedBoxIndex ? "red" : "blue";
+          ctx.strokeRect(box.x, box.y, box.w, box.h);
+          ctx.fillStyle = "black";
+          ctx.fillText(box.char, box.x + 2, box.y + 12);
+        });
+      }
+
+      canvas.addEventListener("mousedown", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        selectedBoxIndex = boxes.findIndex((b) => mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h);
+        if (selectedBoxIndex >= 0) {
+          offsetX = mx - boxes[selectedBoxIndex].x;
+          offsetY = my - boxes[selectedBoxIndex].y;
+          charInput.value = boxes[selectedBoxIndex].char;
+        }
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (selectedBoxIndex === null) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        boxes[selectedBoxIndex].x = mx - offsetX;
+        boxes[selectedBoxIndex].y = my - offsetY;
+        draw();
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        selectedBoxIndex = null;
+      });
+
+      charInput.addEventListener("input", () => {
+        if (selectedBoxIndex !== null) {
+          boxes[selectedBoxIndex].char = charInput.value;
+          draw();
+        }
+      });
+
+      function downloadBox() {
+        const lines = boxes.map((b) => {
+          const x1 = b.x;
+          const y1 = canvas.height - (b.y + b.h);
+          const x2 = b.x + b.w;
+          const y2 = canvas.height - b.y;
+          return `${b.char} ${x1} ${y1} ${x2} ${y2} 0`;
+        });
+        const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "edited.box";
+        a.click();
+      }
+    </script>
+  </body>
+</html>
