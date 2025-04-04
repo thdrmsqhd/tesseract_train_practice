@@ -11,6 +11,7 @@ def generate_train_list(directory, output_file):
 
 if __name__ == "__main__":
     current_directory = os.path.dirname(os.path.abspath(__file__))
-    output_file = os.path.join(current_directory, 'train.list')
+    image_directory = os.path.join(current_directory, 'image')
+    output_file = os.path.join(image_directory, 'train.list')
     generate_train_list(current_directory, output_file)
     print(f"'train.list' has been created in {current_directory}")

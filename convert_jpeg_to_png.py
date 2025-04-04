@@ -1,18 +1,16 @@
 import os
 from PIL import Image
 
-def convert_jpeg_to_png(directory):
-    for filename in os.listdir(directory):
-        img_path = os.path.join(directory, filename)
-        # Check if the file is an image
-        if filename.lower().endswith(('.jpeg', '.jpg', '.png')):
-            with Image.open(img_path) as img:
-                # Get DPI value
-                dpi = img.info.get('dpi', 'DPI information not available')
-                print(f"DPI of {img_path}: {dpi}")
-        
-            
+# Get the list of all files in the current directory
+for filename in os.listdir('./image'):
+    # Check if the file has a .jpg extension
+    if filename.lower().endswith('.jpg'):
+        # Construct the full file path
+        file_path = os.path.join('./image', filename)
+        # Open the image file
+        with Image.open(file_path) as img:
+            # Remove the .jpg extension and add .png
+            png_filename = os.path.splitext(filename)[0] + '.png'
+            # Save the image as a .png file in the same directory
+            img.save(os.path.join('./image', png_filename), 'PNG')
 
-if __name__ == "__main__":
-    directory = "/Users/song-geunbong/Documents/tesseract_prac"
-    convert_jpeg_to_png(directory)
