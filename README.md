@@ -7,8 +7,11 @@
 ---
 
 ### MakeBox
-`tesseract image/00001.png image/00001 --psm 6 --oem 1 -l eng -c tessedit_char_whitelist=0123456789. batch.nochop makebox`
+`tesseract image/00001.png image/00001 --psm 6 --oem 1 -l eng -c tessedit_char_whitelist=0123456789. batch.nochop makebox`  
+
+* 스크립트  
 `./make_boxes.sh`
+
 ---
 
 ### 박스 수정

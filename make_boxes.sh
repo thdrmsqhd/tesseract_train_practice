@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 이미지가 들어 있는 디렉토리
-IMG_DIR="image"
+IMG_DIR="/data/processed_image"
 
 # tessdata 경로가 필요한 경우 설정
 # export TESSDATA_PREFIX="/data/tessdata"
